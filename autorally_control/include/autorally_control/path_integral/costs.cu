@@ -369,8 +369,14 @@ inline __host__ __device__ void MPPICosts::coorTransform(float x, float y, float
 
   double focal_ = 80;
 
-  double uprime = focal_*cam_x;
-  double vprime = focal_*cam_y + 60; // 60 for offset (from camera intrinsics and extrinsics)
+  // for (160, 80)
+  // double uprime = focal_*cam_x;
+  // double vprime = focal_*cam_y + 60; // 60 for offset (from camera intrinsics and extrinsics)
+
+  // for (160, 128)
+  double uprime = focal_*cam_x + 45;
+  double vprime = focal_*cam_y + 50; // 60 for offset (from camera intrinsics and extrinsics)
+
   //0.25: 2 max-pools.
   // vprime *= 0.25;
   // uprime *= 0.25;
@@ -392,8 +398,13 @@ inline void MPPICosts::coorTransformHost(float x, float y, float* u, float* v, f
 
   double focal_ = 80;
 
-  double uprime = focal_*cam_x;
-  double vprime = focal_*cam_y + 60; // 60 for offset (from camera intrinsics and extrinsics)
+  // for (160, 80)
+  // double uprime = focal_*cam_x;
+  // double vprime = focal_*cam_y + 60; // 60 for offset (from camera intrinsics and extrinsics)
+
+  // for (160, 128)
+  double uprime = focal_*cam_x + 45;
+  double vprime = focal_*cam_y + 50; // 60 for offset (from camera intrinsics and extrinsics)
 
   //0.25: 2 max-pools.
   // vprime *= 0.25;
@@ -423,7 +434,8 @@ inline __device__ float MPPICosts::getTrackCost(float* s, int* crash)
   coorTransform(x_front, y_front, &u, &v, &w);
   // printf("%f, %f, %f, %f \n", x_front, y_front, u, v);
   float width = 160;
-  float height = 80;
+  // float height = 80;
+  float height = 128;
   float track_cost_front = tex2D<float>(costmap_tex_, v/width, u/height);
   // if ((u > width) || (u < 0) || (v < 0)) { // crash in front
   //   crash[0] = 1;
@@ -431,9 +443,9 @@ inline __device__ float MPPICosts::getTrackCost(float* s, int* crash)
   //   crash[0] = 10;
   // }
 
-  if (v > height) { // going backward
-      crash[0] = 100;
-  }
+  // if (u > height) { // going backward
+  //     crash[0] = 100;
+  // }
 
   //Cost for back of the car
   // coorTransform(x_back, y_back, &u, &v, &w);
