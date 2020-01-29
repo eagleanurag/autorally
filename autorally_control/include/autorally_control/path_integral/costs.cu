@@ -367,7 +367,7 @@ inline __host__ __device__ void MPPICosts::coorTransform(float x, float y, float
   cam_x = cam_x / depth;
   cam_y = cam_y / depth;
 
-  double focal_ = 80;
+  double focal_ = 160;
 
   // for (160, 80)
   // double uprime = focal_*cam_x;
@@ -396,7 +396,7 @@ inline void MPPICosts::coorTransformHost(float x, float y, float* u, float* v, f
   cam_x = cam_x / depth;
   cam_y = cam_y / depth;
 
-  double focal_ = 80;
+  double focal_ = 160;
 
   // for (160, 80)
   // double uprime = focal_*cam_x;
@@ -404,7 +404,7 @@ inline void MPPICosts::coorTransformHost(float x, float y, float* u, float* v, f
 
   // for (160, 128)
   double uprime = focal_*cam_x + 45;
-  double vprime = focal_*cam_y + 50; // 60 for offset (from camera intrinsics and extrinsics)
+  double vprime = focal_*cam_y + 60; // 60 for offset (from camera intrinsics and extrinsics)
 
   //0.25: 2 max-pools.
   // vprime *= 0.25;
@@ -437,11 +437,12 @@ inline __device__ float MPPICosts::getTrackCost(float* s, int* crash)
   // float height = 80;
   float height = 128;
   float track_cost_front = tex2D<float>(costmap_tex_, v/width, u/height);
-  // if ((u > width) || (u < 0) || (v < 0)) { // crash in front
-  //   crash[0] = 1;
-  // } else if (v > height) { // going backward
-  //   crash[0] = 10;
-  // }
+
+  if ((v > width) || (u < 0) || (v < 0)) { // going outside of the image
+    crash[0] = 1;
+  } else if (u > height) { // going backward
+    crash[0] = 2;
+  }
 
   // if (u > height) { // going backward
   //     crash[0] = 100;
@@ -483,7 +484,7 @@ inline __device__ float MPPICosts::computeCost(float* s, float* u, float* du,
   float control_cost = getControlCost(u, du, vars);
   float track_cost = getTrackCost(s, crash);
   float speed_cost = getSpeedCost(s, crash);
-  float crash_cost = (1.0 - params_.discount)*getCrashCost(s, crash, timestep);
+  float crash_cost = (1.0 - powf(params_.discount, timestep))*getCrashCost(s, crash, timestep);
   float stabilizing_cost = getStabilizingCost(s);            
   float cost = control_cost + speed_cost + crash_cost + track_cost + stabilizing_cost;
   if (cost > 1e9 || isnan(cost)) {
