@@ -438,11 +438,11 @@ inline __device__ float MPPICosts::getTrackCost(float* s, int* crash)
   float height = 128;
   float track_cost_front = tex2D<float>(costmap_tex_, v/width, u/height);
 
-  if ((v > width) || (u < 0) || (v < 0)) { // going outside of the image
-    crash[0] = 1;
-  } else if (u > height) { // going backward
-    crash[0] = 2;
-  }
+  // if ((v > width) || (u < 0) || (v < 0)) { // going outside of the image
+  //   crash[0] = 1;
+  // } else if (u > height) { // going backward
+  //   crash[0] = 2;
+  // }
 
   // if (u > height) { // going backward
   //     crash[0] = 100;
